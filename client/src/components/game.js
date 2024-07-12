@@ -4,6 +4,16 @@ import { Typography, Button, Paper, Grid, CircularProgress } from '@material-ui/
 import { useSpring, animated } from 'react-spring';
 import LetterWheel from './LetterWheel';
 import WordGrid from './WordGrid';
+import AdComponent from './Adcomponent';
+import { RewardedAd,RewardedAdEventType,TestIds } from 'react-native-google-mobile-ads';
+
+const adUnitId = _DEV_ ? TestIds.REWARDED : 'ca-app-pub-8872295629873127/9044567455';
+
+const rewarded = RewardedAd.createForAdRequest(addUnitId,{
+  requestNonPersonalizedAdsOnly:true, 
+  keywords:['game', 'word'],
+});
+
 
 const Game = ({ gameData, isDaily, user, showNotification }) => {
   const [letters, setLetters] = useState([]);
@@ -14,6 +24,18 @@ const Game = ({ gameData, isDaily, user, showNotification }) => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [gameStatus, setGameStatus] = useState('ready'); // 'ready', 'playing', 'finished'
   const [hints, setHints] = useState(3);
+  const [showAd,setShowAd] =useState(false);
+  const [loaded,setLoaded] = useState(false);
+
+
+useEffect(() => {
+//Show an ad every 5 games 
+if(user.gamesPlayed % 5 === 0)
+{
+setShowAd(true);
+}
+},[user.gamesPlayed]);
+ 
 
   useEffect(() => {
     if (gameData) {
@@ -53,6 +75,11 @@ const Game = ({ gameData, isDaily, user, showNotification }) => {
         isDaily,
       });
       showNotification('Game stats updated', 'success');
+
+      //Show ad if it's time 
+      if(user.gamesPlayed % 5 === 0) {
+        setShowAd(true);
+      }
     } catch (error) {
       showNotification('Error updating stats', 'error');
     }
@@ -75,6 +102,35 @@ const Game = ({ gameData, isDaily, user, showNotification }) => {
     }
     setCurrentWord('');
   };
+  
+  useEffect(() => {
+    const unsubscribeLoaded = rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => {
+      setLoaded(true);
+    });
+    const unsubscribeEarned = rewarded.addAdEventListener(
+      RewardedAdEventType.EARNED_REWARD,
+      reward => {
+        setHints(prevHints => prevHints + 1);
+        showNotification('You earned a hint for watching an ad!', 'success');
+      },
+    );
+ // Start loading the rewarded ad straight away
+ rewarded.load();
+
+ // Unsubscribe from events on unmount
+ return () => {
+   unsubscribeLoaded();
+   unsubscribeEarned();
+ };
+}, []);
+
+const showRewardedAd = () => {
+  if (loaded) {
+    rewarded.show();
+  } else {
+    showNotification('Ad not ready yet, please try again later', 'warning');
+  }
+};
 
   const useHint = () => {
     if (hints > 0) {
@@ -96,44 +152,59 @@ const Game = ({ gameData, isDaily, user, showNotification }) => {
     return <CircularProgress />;
   }
 
-  return (
-    <Paper elevation={3} style={{ padding: '20px', margin: '20px 0' }}>
-      <Typography variant="h4">{isDaily ? 'Daily Challenge' : 'Word Weaver'}</Typography>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <LetterWheel letters={letters} onLetterSelect={handleLetterSelect} />
+    return (
+      <Paper elevation={3} style={{ padding: '20px', margin: '20px 0' }}>
+        <Typography variant="h4">{isDaily ? 'Daily Challenge' : 'Word Weaver'}</Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <LetterWheel letters={letters} onLetterSelect={handleLetterSelect} />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <WordGrid words={words} guessedWords={guessedWords} />
+          </Grid>
         </Grid>
-        <Grid item xs={12} md={6}>
-          <WordGrid words={words} guessedWords={guessedWords} />
-        </Grid>
-      </Grid>
-      <Typography variant="h6">
-        Score: <animated.span>{scoreSpring.number.to((val) => Math.floor(val))}</animated.span>
-      </Typography>
-      <Typography variant="h6">Time Left: {timeLeft} seconds</Typography>
-      <Typography variant="h6">Current Word: {currentWord}</Typography>
-      <Button variant="contained" color="primary" onClick={handleWordSubmit} disabled={gameStatus !== 'playing'}>
-        Submit Word
-      </Button>
-      <Button variant="contained" color="secondary" onClick={useHint} disabled={gameStatus !== 'playing' || hints === 0}>
-        Use Hint ({hints} remaining)
-      </Button>
-      {gameStatus === 'ready' && (
-        <Button variant="contained" color="primary" onClick={startGame}>
-          Start Game
+        <Typography variant="h6">
+          Score: <animated.span>{scoreSpring.number.to((val) => Math.floor(val))}</animated.span>
+        </Typography>
+        <Typography variant="h6">Time Left: {timeLeft} seconds</Typography>
+        <Typography variant="h6">Current Word: {currentWord}</Typography>
+        <Button variant="contained" color="primary" onClick={handleWordSubmit} disabled={gameStatus !== 'playing'}>
+          Submit Word
         </Button>
-      )}
-      {gameStatus === 'finished' && (
-        <div>
-          <Typography variant="h5">Game Over!</Typography>
-          <Typography variant="h6">Final Score: {score}</Typography>
-          <Typography variant="h6">Words Guessed: {guessedWords.length}</Typography>
-          <Button variant="contained" color="primary" onClick={() => window.location.reload()}>
-            Play Again
+        <Button variant="contained" color="secondary" onClick={useHint} disabled={gameStatus !== 'playing' || hints === 0}>
+          Use Hint ({hints} remaining)
+        </Button>
+        {/* New button for watching video ad */}
+        <Button 
+        variant="contained" 
+        color="secondary" 
+        onClick={showRewardedAd} 
+        disabled={!loaded || gameStatus !== 'playing'}
+      >
+        Watch Ad for Hint
+      </Button>
+        {gameStatus === 'ready' && (
+          <Button variant="contained" color="primary" onClick={startGame}>
+            Start Game
           </Button>
-        </div>
-      )}
-    </Paper>
+        )}
+        {showAd && (
+          <div style={{ margin: '20px 0' }}>
+            <Typography variant="subtitle1">Advertisement</Typography>
+            <AdComponent adSlot="5427959914" /> 
+          </div>
+        )}
+        {gameStatus === 'finished' && (
+          <div>
+            <Typography variant="h5">Game Over!</Typography>
+            <Typography variant="h6">Final Score: {score}</Typography>
+            <Typography variant="h6">Words Guessed: {guessedWords.length}</Typography>
+            <Button variant="contained" color="primary" onClick={() => window.location.reload()}>
+              Play Again
+            </Button>
+          </div>
+        )}
+      </Paper>
   );
 };
 

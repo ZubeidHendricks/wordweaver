@@ -1,4 +1,3 @@
-// server/controllers/userController.js
 exports.updateStats = async (req, res) => {
     try {
       const { score, wordsGuessed, timeTaken } = req.body;

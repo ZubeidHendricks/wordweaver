@@ -1,4 +1,3 @@
-// client/src/components/AdComponent.js
 import React from 'react';
 import AdSense from 'react-adsense';
 
