@@ -1,0 +1,17 @@
+// client/src/components/AdComponent.js
+import React from 'react';
+import AdSense from 'react-adsense';
+
+const AdComponent = ({ adSlot }) => {
+  return (
+    <AdSense.Google
+      client='ca-pub-XXXXXXXXXXXXXXXX' // Replace with your AdSense publisher ID
+      slot={adSlot}
+      style={{ display: 'block' }}
+      format='auto'
+      responsive='true'
+    />
+  );
+};
+
+export default AdComponent;

@@ -15,6 +15,7 @@ const Auth = ({ setUser }) => {
       setUser(data.user);
     } catch (error) {
       console.error('Authentication error:', error);
+      showNotification(error.response?.data?.message || 'An error occurred', 'error'); 
     }
   };
 

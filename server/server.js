@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const gameRoutes = require('./routes/gameRoutes');
 const userRoutes = require('./routes/userRoutes');
+const leaderboardRoutes = require('./routes/leaderboardRoutes');
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -12,6 +14,7 @@ const purchaseRoutes = require('./routes/purchaseRoutes');
 
 app.use(cors());
 app.use(express.json());
+app.use('api/leaderboard',leaderboardRoutes); 
 
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
