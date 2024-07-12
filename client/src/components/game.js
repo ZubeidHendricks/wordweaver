@@ -4,7 +4,7 @@ import { Typography, Button, Paper, Grid, CircularProgress } from '@material-ui/
 import { useSpring, animated } from 'react-spring';
 import LetterWheel from './LetterWheel';
 import WordGrid from './WordGrid';
-import AdComponent from './Adcomponent';
+import AdComponent from './Adcomponent.js';
 import { RewardedAd,RewardedAdEventType,TestIds } from 'react-native-google-mobile-ads';
 
 const adUnitId = _DEV_ ? TestIds.REWARDED : 'ca-app-pub-8872295629873127/9044567455';
