@@ -14,7 +14,7 @@ const purchaseRoutes = require('./routes/purchaseRoutes');
 
 app.use(cors());
 app.use(express.json());
-app.use('api/leaderboard',leaderboardRoutes); 
+app.use('/api/leaderboard',leaderboardRoutes); 
 
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
