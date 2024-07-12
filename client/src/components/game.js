@@ -3,6 +3,15 @@ import axios from 'axios';
 import LetterWheel from './letterwheel';
 import WordGrid from './WordGrid';
 import ControlPanel from './ControlPanel';
+import HintPurchase from './HintPurchase';
+
+const [hints, setHints] = useState(0);
+const useHint = () => {
+  if (hints > 0) {
+    // Implement hint logic here (e.g., reveal a letter)
+    setHints(prevHints => prevHints - 1);
+  }
+};
 
 const LETTER_POINTS = {
   'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1, 'F': 4, 'G': 2, 'H': 4, 'I': 1, 'J': 8,
@@ -61,6 +70,7 @@ const Game = () => {
     <div className="game-container">
       <h1>Word Weaver</h1>
       <div className="score">Score: {score}</div>
+      <div className="hints">Hints: {hints}</div>
       <LetterWheel letters={letters} onLetterSelect={handleLetterSelect} />
       <div className="current-word">Current Word: {currentWord}</div>
       <WordGrid words={words} completedWords={completedWords} />
@@ -68,7 +78,9 @@ const Game = () => {
         currentWord={currentWord}
         onWordSubmit={handleWordSubmit}
         onReset={handleReset}
+        onUseHint={useHint}
       />
+      <HintPurchase setHints={setHints} />
     </div>
   );
 };
