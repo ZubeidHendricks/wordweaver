@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Redirect, Switch, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route,Routes, Link , Navigate} from 'react-router-dom';
 import axios from 'axios';
 import Game from './components/game';
 import Auth from './components/Auth';
@@ -9,7 +9,6 @@ import AdComponent from './components/Adcomponent.js';
 import { ThemeProvider, createTheme } from '@material-ui/core/styles';
 import { blue, orange } from '@material-ui/core/colors';
 import { CssBaseline, AppBar, Toolbar, Typography, Button, Container, Box } from '@material-ui/core';
-import { MobileAds } from 'react-native-google-mobile-ads';
 const theme = createTheme({
   palette: {
     primary: {
@@ -101,7 +100,7 @@ const App = () => {
     <Route
       {...rest}
       render={props =>
-        user ? <Component {...props} /> : <Redirect to="/login" />
+        user ? <Component {...props} /> : <Navigate to="/login" />
       }
     />
   );
@@ -128,12 +127,12 @@ const App = () => {
         <Container>
           <Notification message={notification.message} type={notification.type} />
 
-          <Switch>
+          <Routes>
             <Route 
               path="/login" 
               render={() => 
                 user ? (
-                  <Redirect to="/game" />
+                  <Navigate to="/game" />
                 ) : (
                   <Auth setUser={setUser} showNotification={showNotification} />
                 )
@@ -146,11 +145,11 @@ const App = () => {
               )} 
             />
             <Route path="/leaderboard" component={Leaderboard} />
-            <Redirect from="/" to="/game" />
-          </Switch>
+            <Navigate from="/" to="/game" />
+          </Routes>
 
           <Box mt={4}>
-            <AdComponent adSlot="5427959914" /> {/* Replace with your actual ad slot */}
+            <AdComponent adSlot="5427959914" /> 
           </Box>
         </Container>
       </Router>

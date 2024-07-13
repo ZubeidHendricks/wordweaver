@@ -1,23 +1,29 @@
-
 import React from 'react';
-import { useSpring, animated } from 'react-spring';
+import { useTrail, animated } from 'react-spring';
+
+// Custom hook for the spring animations using useTrail
+const useLetterSprings = (letters) => {
+  return useTrail(letters.length, {
+    from: { opacity: 0, transform: 'scale(0)' },
+    to: { opacity: 1, transform: 'scale(1)' },
+    delay: 200,
+    config: { mass: 1, tension: 120, friction: 14 },
+  });
+};
 
 const LetterWheel = ({ letters, onLetterSelect }) => {
   const wheelRadius = 150;
   const letterCount = letters.length;
 
+  // Use the custom hook to get the springs for each letter
+  const springs = useLetterSprings(letters);
+
   return (
     <svg width={wheelRadius * 2} height={wheelRadius * 2}>
-      {letters.map((letter, index) => {
+      {springs.map((spring, index) => {
         const angle = (index / letterCount) * 2 * Math.PI - Math.PI / 2;
         const x = wheelRadius + wheelRadius * 0.7 * Math.cos(angle);
         const y = wheelRadius + wheelRadius * 0.7 * Math.sin(angle);
-
-        const spring = useSpring({
-          from: { opacity: 0, transform: 'scale(0)' },
-          to: { opacity: 1, transform: 'scale(1)' },
-          delay: index * 100,
-        });
 
         return (
           <animated.text
@@ -27,10 +33,10 @@ const LetterWheel = ({ letters, onLetterSelect }) => {
             textAnchor="middle"
             dominantBaseline="central"
             fontSize="24"
-            onClick={() => onLetterSelect(letter, index)}
+            onClick={() => onLetterSelect(letters[index], index)}
             style={{ cursor: 'pointer', ...spring }}
           >
-            {letter}
+            {letters[index]}
           </animated.text>
         );
       })}

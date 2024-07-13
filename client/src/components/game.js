@@ -5,14 +5,6 @@ import { useSpring, animated } from 'react-spring';
 import LetterWheel from './LetterWheel';
 import WordGrid from './WordGrid';
 import AdComponent from './Adcomponent.js';
-import { RewardedAd,RewardedAdEventType,TestIds } from 'react-native-google-mobile-ads';
-
-const adUnitId = _DEV_ ? TestIds.REWARDED : 'ca-app-pub-8872295629873127/9044567455';
-
-const rewarded = RewardedAd.createForAdRequest(addUnitId,{
-  requestNonPersonalizedAdsOnly:true, 
-  keywords:['game', 'word'],
-});
 
 
 const Game = ({ gameData, isDaily, user, showNotification }) => {
@@ -103,35 +95,8 @@ setShowAd(true);
     setCurrentWord('');
   };
   
-  useEffect(() => {
-    const unsubscribeLoaded = rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => {
-      setLoaded(true);
-    });
-    const unsubscribeEarned = rewarded.addAdEventListener(
-      RewardedAdEventType.EARNED_REWARD,
-      reward => {
-        setHints(prevHints => prevHints + 1);
-        showNotification('You earned a hint for watching an ad!', 'success');
-      },
-    );
- // Start loading the rewarded ad straight away
- rewarded.load();
 
- // Unsubscribe from events on unmount
- return () => {
-   unsubscribeLoaded();
-   unsubscribeEarned();
- };
-}, []);
-
-const showRewardedAd = () => {
-  if (loaded) {
-    rewarded.show();
-  } else {
-    showNotification('Ad not ready yet, please try again later', 'warning');
-  }
-};
-
+ 
   const useHint = () => {
     if (hints > 0) {
       const unguessedWords = words.filter((word) => !guessedWords.includes(word));
@@ -174,15 +139,6 @@ const showRewardedAd = () => {
         <Button variant="contained" color="secondary" onClick={useHint} disabled={gameStatus !== 'playing' || hints === 0}>
           Use Hint ({hints} remaining)
         </Button>
-        {/* New button for watching video ad */}
-        <Button 
-        variant="contained" 
-        color="secondary" 
-        onClick={showRewardedAd} 
-        disabled={!loaded || gameStatus !== 'playing'}
-      >
-        Watch Ad for Hint
-      </Button>
         {gameStatus === 'ready' && (
           <Button variant="contained" color="primary" onClick={startGame}>
             Start Game

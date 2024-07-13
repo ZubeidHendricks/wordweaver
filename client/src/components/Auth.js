@@ -6,6 +6,12 @@ const Auth = ({ setUser }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
+  const showNotification = (message, type) => {
+    // Implementation for showing a notification
+    // This can be a simple alert, console log, or any other notification library you use
+    alert(`${type}: ${message}`);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
