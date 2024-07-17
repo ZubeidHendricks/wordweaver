@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Typography, Button, Paper, Grid, CircularProgress } from '@material-ui/core';
 import { useSpring, animated } from 'react-spring';
-import LetterWheel from './LetterWheel';
-import WordGrid from './WordGrid';
+import LetterWheel from './LetterWheel.js';
+import WordGrid from './WordGrid.js';
 import AdComponent from './Adcomponent.js';
 
 

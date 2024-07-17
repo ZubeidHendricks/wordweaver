@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import {React as useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Route,Routes, Link , Navigate} from 'react-router-dom';
 import axios from 'axios';
-import Game from './components/game';
+import Game from './components/Game.js';
 import Auth from './components/Auth';
 import Leaderboard from './components/Leaderboard';
 import Notification from './components/Notification';
@@ -114,8 +115,8 @@ const App = () => {
             <Typography variant="h6" style={{ flexGrow: 1 }}>
               Word Weaver
             </Typography>
-            <Button color="inherit" component={Link} to="/game">Game</Button>
-            <Button color="inherit" component={Link} to="/leaderboard">Leaderboard</Button>
+            <Button color="inherit" component={Link} to="/Game">Game</Button>
+            <Button color="inherit" component={Link} to="/Leaderboard">Leaderboard</Button>
             {user ? (
               <Button color="inherit" onClick={logout}>Logout</Button>
             ) : (
@@ -132,20 +133,20 @@ const App = () => {
               path="/login" 
               render={() => 
                 user ? (
-                  <Navigate to="/game" />
+                  <Navigate to="/Game" />
                 ) : (
                   <Auth setUser={setUser} showNotification={showNotification} />
                 )
               } 
             />
             <PrivateRoute 
-              path="/game" 
+              path="/Game" 
               component={(props) => (
                 <Game {...props} user={user} showNotification={showNotification} />
               )} 
             />
             <Route path="/leaderboard" component={Leaderboard} />
-            <Navigate from="/" to="/game" />
+            <Navigate from="/" to="/Game" />
           </Routes>
 
           <Box mt={4}>

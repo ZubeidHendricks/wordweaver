@@ -33,6 +33,7 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
+client/node_modules
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
@@ -92,3 +93,7 @@ dist
 
 # TernJS port file
 .tern-port
+
+.vscode 
+
+
