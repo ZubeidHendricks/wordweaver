@@ -8,7 +8,13 @@ import Notification from './components/Notification';
 import AdComponent from './components/Adcomponent.js';
 import { ThemeProvider, createTheme } from '@material-ui/core/styles';
 import { blue, orange } from '@material-ui/core/colors';
-import { CssBaseline, AppBar, Toolbar, Typography, Button, Container, Box } from '@material-ui/core';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
+import Container from '@material-ui/core/Container';
+import Box from '@material-ui/core/Box';
 
 const theme = createTheme({
   palette: {
