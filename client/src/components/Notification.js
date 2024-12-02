@@ -1,10 +1,15 @@
 import React from 'react';
-import { Snackbar, Alert } from '@material-ui/core';
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
+
+const Alert = (props) => {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+};
 
 const Notification = ({ message, type }) => {
   return (
     <Snackbar open={Boolean(message)} autoHideDuration={3000}>
-      <Alert severity={type || 'info'} elevation={6} variant="filled">
+      <Alert severity={type || 'info'}>
         {message}
       </Alert>
     </Snackbar>
