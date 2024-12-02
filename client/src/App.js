@@ -1,6 +1,5 @@
-import {React as useState, useEffect } from 'react';
-import React from 'react';
-import { BrowserRouter as Router, Route,Routes, Link , Navigate} from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import Game from './components/Game.js';
 import Auth from './components/Auth';
@@ -10,6 +9,7 @@ import AdComponent from './components/Adcomponent.js';
 import { ThemeProvider, createTheme } from '@material-ui/core/styles';
 import { blue, orange } from '@material-ui/core/colors';
 import { CssBaseline, AppBar, Toolbar, Typography, Button, Container, Box } from '@material-ui/core';
+
 const theme = createTheme({
   palette: {
     primary: {
@@ -66,8 +66,6 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [notification, setNotification] = useState({ message: '', type: '' });
   
-  
-     
   useEffect(() => {  
     const token = localStorage.getItem('token');
     if (token) {
@@ -97,14 +95,9 @@ const App = () => {
     showNotification('Logged out successfully', 'success');
   };
 
-  const PrivateRoute = ({ component: Component, ...rest }) => (
-    <Route
-      {...rest}
-      render={props =>
-        user ? <Component {...props} /> : <Navigate to="/login" />
-      }
-    />
-  );
+  const PrivateRoute = ({ children }) => {
+    return user ? children : <Navigate to="/login" />;
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -115,8 +108,8 @@ const App = () => {
             <Typography variant="h6" style={{ flexGrow: 1 }}>
               Word Weaver
             </Typography>
-            <Button color="inherit" component={Link} to="/Game">Game</Button>
-            <Button color="inherit" component={Link} to="/Leaderboard">Leaderboard</Button>
+            <Button color="inherit" component={Link} to="/game">Game</Button>
+            <Button color="inherit" component={Link} to="/leaderboard">Leaderboard</Button>
             {user ? (
               <Button color="inherit" onClick={logout}>Logout</Button>
             ) : (
@@ -131,22 +124,24 @@ const App = () => {
           <Routes>
             <Route 
               path="/login" 
-              render={() => 
+              element={
                 user ? (
-                  <Navigate to="/Game" />
+                  <Navigate to="/game" />
                 ) : (
                   <Auth setUser={setUser} showNotification={showNotification} />
                 )
               } 
             />
-            <PrivateRoute 
-              path="/Game" 
-              component={(props) => (
-                <Game {...props} user={user} showNotification={showNotification} />
-              )} 
+            <Route 
+              path="/game" 
+              element={
+                <PrivateRoute>
+                  <Game user={user} showNotification={showNotification} />
+                </PrivateRoute>
+              } 
             />
-            <Route path="/leaderboard" component={Leaderboard} />
-            <Navigate from="/" to="/Game" />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/" element={<Navigate to="/game" />} />
           </Routes>
 
           <Box mt={4}>
