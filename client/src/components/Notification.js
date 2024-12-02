@@ -1,12 +1,13 @@
 import React from 'react';
+import { Snackbar, Alert } from '@material-ui/core';
 
 const Notification = ({ message, type }) => {
-  if (!message) return null;
-
   return (
-    <div className={`notification ${type}`}>
-      {message}
-    </div>
+    <Snackbar open={Boolean(message)} autoHideDuration={3000}>
+      <Alert severity={type || 'info'} elevation={6} variant="filled">
+        {message}
+      </Alert>
+    </Snackbar>
   );
 };
 
