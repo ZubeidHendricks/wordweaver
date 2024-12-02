@@ -1,6 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@material-ui/core';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -16,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
 
 const Leaderboard = () => {
   const classes = useStyles();
-  const [leaderboardData, setLeaderboardData] = useState([
+  const [leaderboardData] = useState([
     { username: 'Player 1', score: 1000, rank: 1 },
     { username: 'Player 2', score: 850, rank: 2 },
     { username: 'Player 3', score: 720, rank: 3 },
