@@ -1,6 +1,26 @@
 {
   "version": 2,
-  "buildCommand": "cd client && npm install && NODE_OPTIONS='--openssl-legacy-provider' npm run build",
-  "outputDirectory": "client/build",
-  "framework": "create-react-app"
+  "builds": [
+    {
+      "src": "server/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "client/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "server/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "client/build/$1"
+    }
+  ]
 }
