@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../axios';
 import { makeStyles } from '@material-ui/core/styles';
 import { TextField, Button, Paper, Typography, Container } from '@material-ui/core';
 
@@ -32,13 +32,14 @@ const Auth = ({ setUser, showNotification }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-      const { data } = await axios.post(endpoint, { username, password });
+      const endpoint = isLogin ? '/auth/login' : '/auth/register';
+      const { data } = await axiosInstance.post(endpoint, { username, password });
       localStorage.setItem('token', data.token);
       setUser(data.user);
       showNotification(`Successfully ${isLogin ? 'logged in' : 'registered'}!`, 'success');
     } catch (error) {
       showNotification(error.response?.data?.message || 'An error occurred', 'error');
+      console.error('Auth error:', error.response?.data || error);
     }
   };
 
