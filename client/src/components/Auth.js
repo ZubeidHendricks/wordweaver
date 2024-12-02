@@ -32,14 +32,25 @@ const Auth = ({ setUser, showNotification }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const endpoint = isLogin ? '/auth/login' : '/auth/register';
-      const { data } = await axiosInstance.post(endpoint, { username, password });
+      const response = await fetch(`/auth/${isLogin ? 'login' : 'register'}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'An error occurred');
+      }
+
       localStorage.setItem('token', data.token);
       setUser(data.user);
       showNotification(`Successfully ${isLogin ? 'logged in' : 'registered'}!`, 'success');
     } catch (error) {
-      showNotification(error.response?.data?.message || 'An error occurred', 'error');
-      console.error('Auth error:', error.response?.data || error);
+      console.error('Auth error:', error);
+      showNotification(error.message || 'An error occurred', 'error');
     }
   };
 
