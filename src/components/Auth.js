@@ -31,7 +31,10 @@ const Auth = ({ setUser, showNotification }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`/auth/${isLogin ? 'login' : 'register'}`, {
+      const url = `/auth/${isLogin ? 'login' : 'register'}`;
+      console.log('Making request to:', url);
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,7 +42,18 @@ const Auth = ({ setUser, showNotification }) => {
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await response.json();
+      console.log('Response status:', response.status);
+      const responseText = await response.text();
+      console.log('Response text:', responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Failed to parse response as JSON:', e);
+        throw new Error('Server returned invalid JSON');
+      }
+
       if (!response.ok) {
         throw new Error(data.message || 'An error occurred');
       }
