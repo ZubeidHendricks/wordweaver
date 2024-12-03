@@ -1,6 +1,12 @@
-import React from 'react';
-import App from '../src/App';
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
 
 export default function Home() {
-  return <App />;
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push('/game');
+  }, []);
+
+  return null;
 }
