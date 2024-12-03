@@ -2,29 +2,28 @@
   "version": 2,
   "builds": [
     {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "client/package.json",
       "use": "@vercel/static-build",
       "config": {
         "distDir": "build"
       }
-    },
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/auth/register",
-      "dest": "/api/auth/register.js"
+      "src": "/auth/(.*)",
+      "dest": "/api/auth/$1"
     },
     {
-      "src": "/auth/login",
-      "dest": "/api/auth/login.js"
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "client/build/$1"
+      "dest": "/client/build/index.html"
     }
   ]
 }
