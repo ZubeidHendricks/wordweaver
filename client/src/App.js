@@ -5,7 +5,6 @@ import Game from './components/Game.js';
 import Auth from './components/Auth';
 import Leaderboard from './components/Leaderboard';
 import Notification from './components/Notification';
-import AdComponent from './components/Adcomponent.js';
 import { ThemeProvider, createTheme } from '@material-ui/core/styles';
 import { blue, orange } from '@material-ui/core/colors';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -14,7 +13,6 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Container from '@material-ui/core/Container';
-import Box from '@material-ui/core/Box';
 
 const theme = createTheme({
   palette: {
@@ -59,11 +57,6 @@ const theme = createTheme({
       root: {
         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
       },
-    },
-  },
-  props: {
-    MuiButton: {
-      disableElevation: true,
     },
   },
 });
@@ -126,7 +119,6 @@ const App = () => {
 
         <Container>
           <Notification message={notification.message} type={notification.type} />
-
           <Routes>
             <Route 
               path="/login" 
@@ -149,10 +141,6 @@ const App = () => {
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/" element={<Navigate to="/game" />} />
           </Routes>
-
-          <Box mt={4}>
-            <AdComponent adSlot="5427959914" /> 
-          </Box>
         </Container>
       </Router>
     </ThemeProvider>
