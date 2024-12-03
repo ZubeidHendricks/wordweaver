@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
 import axios from 'axios';
-import Game from './components/Game.js';
+import Game from './components/Game';
 import Auth from './components/Auth';
 import Leaderboard from './components/Leaderboard';
 import Notification from './components/Notification';
@@ -62,6 +63,7 @@ const theme = createTheme({
 });
 
 const App = () => {
+  const router = useRouter();
   const [user, setUser] = useState(null);
   const [notification, setNotification] = useState({ message: '', type: '' });
   
@@ -92,57 +94,38 @@ const App = () => {
     localStorage.removeItem('token');
     setUser(null);
     showNotification('Logged out successfully', 'success');
-  };
-
-  const PrivateRoute = ({ children }) => {
-    return user ? children : <Navigate to="/login" />;
+    router.push('/login');
   };
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
-        <AppBar position="static">
-          <Toolbar>
-            <Typography variant="h6" style={{ flexGrow: 1 }}>
-              Word Weaver
-            </Typography>
-            <Button color="inherit" component={Link} to="/game">Game</Button>
-            <Button color="inherit" component={Link} to="/leaderboard">Leaderboard</Button>
-            {user ? (
-              <Button color="inherit" onClick={logout}>Logout</Button>
-            ) : (
-              <Button color="inherit" component={Link} to="/login">Login</Button>
-            )}
-          </Toolbar>
-        </AppBar>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" style={{ flexGrow: 1 }}>
+            Word Weaver
+          </Typography>
+          <Button color="inherit" component={Link} href="/game">Game</Button>
+          <Button color="inherit" component={Link} href="/leaderboard">Leaderboard</Button>
+          {user ? (
+            <Button color="inherit" onClick={logout}>Logout</Button>
+          ) : (
+            <Button color="inherit" component={Link} href="/login">Login</Button>
+          )}
+        </Toolbar>
+      </AppBar>
 
-        <Container>
-          <Notification message={notification.message} type={notification.type} />
-          <Routes>
-            <Route 
-              path="/login" 
-              element={
-                user ? (
-                  <Navigate to="/game" />
-                ) : (
-                  <Auth setUser={setUser} showNotification={showNotification} />
-                )
-              } 
-            />
-            <Route 
-              path="/game" 
-              element={
-                <PrivateRoute>
-                  <Game user={user} showNotification={showNotification} />
-                </PrivateRoute>
-              } 
-            />
-            <Route path="/leaderboard" element={<Leaderboard />} />
-            <Route path="/" element={<Navigate to="/game" />} />
-          </Routes>
-        </Container>
-      </Router>
+      <Container>
+        <Notification message={notification.message} type={notification.type} />
+        {router.pathname === '/' && <Game user={user} showNotification={showNotification} />}
+        {router.pathname === '/login' && <Auth setUser={setUser} showNotification={showNotification} />}
+        {router.pathname === '/game' && user ? (
+          <Game user={user} showNotification={showNotification} />
+        ) : (
+          router.push('/login')
+        )}
+        {router.pathname === '/leaderboard' && <Leaderboard />}
+      </Container>
     </ThemeProvider>
   );
 };
