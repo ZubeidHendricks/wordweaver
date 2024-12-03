@@ -24,7 +24,7 @@ const useStyles = makeStyles((theme) => ({
 
 const Auth = ({ setUser, showNotification }) => {
   const classes = useStyles();
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(false);  // Start with registration form
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -33,6 +33,7 @@ const Auth = ({ setUser, showNotification }) => {
     try {
       const url = `/api/auth/${isLogin ? 'login' : 'register'}`;
       console.log('Making request to:', url);
+      console.log('Request payload:', { username, password });
       
       const response = await fetch(url, {
         method: 'POST',
@@ -72,6 +73,9 @@ const Auth = ({ setUser, showNotification }) => {
       <Paper className={classes.paper}>
         <Typography component="h1" variant="h5">
           {isLogin ? 'Login' : 'Register'}
+        </Typography>
+        <Typography variant="body2" color="textSecondary" style={{ marginTop: '1rem' }}>
+          {isLogin ? 'Please login to continue' : 'Create a new account to start playing'}
         </Typography>
         <form className={classes.form} onSubmit={handleSubmit}>
           <TextField
