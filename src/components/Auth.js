@@ -31,7 +31,7 @@ const Auth = ({ setUser, showNotification }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const url = `/auth/${isLogin ? 'login' : 'register'}`;
+      const url = `/api/auth/${isLogin ? 'login' : 'register'}`;
       console.log('Making request to:', url);
       
       const response = await fetch(url, {
