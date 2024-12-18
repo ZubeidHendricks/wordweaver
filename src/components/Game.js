@@ -1,319 +1,231 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
+import { 
+  Typography, 
+  Grid, 
+  Paper, 
+  Button, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions 
+} from '@material-ui/core';
+
+// Word list for daily challenges
+const WORD_LIST = [
+  'HELLO', 'WORLD', 'BRAVE', 'SMART', 'CLOWN', 
+  'DRONE', 'FLAME', 'GLIDE', 'HOUSE', 'IMAGE'
+];
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    padding: theme.spacing(3),
-  },
-  paper: {
+    maxWidth: 500,
+    margin: '0 auto',
     padding: theme.spacing(2),
     textAlign: 'center',
-    marginBottom: theme.spacing(2),
   },
-  button: {
-    margin: theme.spacing(1),
+  grid: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
   },
-  textField: {
-    margin: theme.spacing(1),
-    width: '100%',
-    maxWidth: '300px',
+  row: {
+    display: 'flex',
+    marginBottom: theme.spacing(1),
   },
-  lettersContainer: {
+  tile: {
+    width: 60,
+    height: 60,
+    border: '2px solid #ccc',
+    margin: theme.spacing(0.5),
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: '2rem',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    transition: 'background-color 0.3s',
+  },
+  correct: {
+    backgroundColor: '#6aaa64',
+    color: 'white',
+    border: 'none',
+  },
+  present: {
+    backgroundColor: '#c9b458',
+    color: 'white',
+    border: 'none',
+  },
+  absent: {
+    backgroundColor: '#787c7e',
+    color: 'white',
+    border: 'none',
+  },
+  keyboard: {
     display: 'flex',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: theme.spacing(1),
     marginTop: theme.spacing(2),
   },
-  letter: {
+  keyboardRow: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginBottom: theme.spacing(1),
+  },
+  key: {
+    margin: theme.spacing(0.5),
     padding: theme.spacing(1),
-    minWidth: '40px',
-    fontSize: '1.2rem',
+    minWidth: 40,
+    backgroundColor: '#d3d6da',
+    border: 'none',
+    borderRadius: 4,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
     cursor: 'pointer',
-    transition: 'transform 0.2s',
     '&:hover': {
-      transform: 'scale(1.1)',
+      backgroundColor: '#bbb',
     },
-    '&.used': {
-      opacity: 0.5,
-      cursor: 'not-allowed',
-    },
-  },
-  wordsContainer: {
-    maxHeight: '200px',
-    overflow: 'auto',
-    margin: theme.spacing(2, 0),
-  },
-  timer: {
-    color: ({ timeLeft }) => timeLeft <= 10 ? theme.palette.error.main : 'inherit',
-    fontWeight: ({ timeLeft }) => timeLeft <= 10 ? 'bold' : 'normal',
   },
 }));
 
-const Game = ({ user, showNotification }) => {
-  const initialState = {
-    score: 0,
-    level: 1,
-    currentWord: '',
-    isPlaying: false,
-    letters: [],
-    usedLetters: {},
-    timeLeft: 60,
-    words: [],
-    levelTarget: 100,
-  };
+const WordleGame = () => {
+  const classes = useStyles();
+  const [dailyWord, setDailyWord] = useState('');
+  const [guesses, setGuesses] = useState(Array(6).fill(null).map(() => Array(5).fill('')));
+  const [currentRow, setCurrentRow] = useState(0);
+  const [currentCol, setCurrentCol] = useState(0);
+  const [gameStatus, setGameStatus] = useState('playing');
+  const [openModal, setOpenModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
 
-  const [gameState, setGameState] = useState(initialState);
-  const classes = useStyles({ timeLeft: gameState.timeLeft });
-
-  const generateLetters = useCallback(() => {
-    const vowels = 'AEIOU'.split('');
-    const consonants = 'BCDFGHJKLMNPQRSTVWXYZ'.split('');
-    const letters = [];
-    
-    // Add vowels (increases with level)
-    const numVowels = Math.min(3 + Math.floor(gameState.level / 3), 6);
-    for (let i = 0; i < numVowels; i++) {
-      letters.push(vowels[Math.floor(Math.random() * vowels.length)]);
-    }
-    
-    // Add consonants
-    const numConsonants = 9 - numVowels;
-    for (let i = 0; i < numConsonants; i++) {
-      letters.push(consonants[Math.floor(Math.random() * consonants.length)]);
-    }
-    
-    return letters.sort(() => Math.random() - 0.5);
-  }, [gameState.level]);
-
-  const startGame = () => {
-    const newLetters = generateLetters();
-    setGameState({
-      ...initialState,
-      isPlaying: true,
-      letters: newLetters,
-      level: gameState.level,
-      levelTarget: 100 * gameState.level,
-    });
-  };
-
-  // Timer effect
+  // Initialize daily word
   useEffect(() => {
-    let timer;
-    if (gameState.isPlaying && gameState.timeLeft > 0) {
-      timer = setInterval(() => {
-        setGameState(prev => ({
-          ...prev,
-          timeLeft: prev.timeLeft - 1,
-        }));
-      }, 1000);
-    } else if (gameState.timeLeft === 0) {
-      endGame();
+    // Use date to select consistent daily word
+    const today = new Date();
+    const seedIndex = today.getDate() % WORD_LIST.length;
+    setDailyWord(WORD_LIST[seedIndex]);
+  }, []);
+
+  const handleKeyPress = useCallback((key) => {
+    if (gameStatus !== 'playing') return;
+
+    if (/^[A-Z]$/.test(key) && currentCol < 5) {
+      // Letter input
+      const newGuesses = [...guesses];
+      newGuesses[currentRow][currentCol] = key;
+      setGuesses(newGuesses);
+      setCurrentCol(prev => Math.min(prev + 1, 4));
+    } else if (key === 'BACKSPACE' && currentCol > 0) {
+      // Backspace
+      const newGuesses = [...guesses];
+      newGuesses[currentRow][currentCol - 1] = '';
+      setGuesses(newGuesses);
+      setCurrentCol(prev => Math.max(prev - 1, 0));
+    } else if (key === 'ENTER' && currentCol === 5) {
+      // Submit guess
+      submitGuess();
     }
-    return () => clearInterval(timer);
-  }, [gameState.isPlaying, gameState.timeLeft]);
+  }, [currentRow, currentCol, guesses, dailyWord, gameStatus]);
 
-  const endGame = async () => {
-    const levelCompleted = gameState.score >= gameState.levelTarget;
-    const newLevel = levelCompleted ? gameState.level + 1 : gameState.level;
-
-    setGameState(prev => ({
-      ...prev,
-      isPlaying: false,
-      level: newLevel,
-    }));
-
-    // Save score to backend
-    try {
-      await fetch('/api/scores', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({
-          score: gameState.score,
-          level: gameState.level,
-          words: gameState.words,
-        }),
-      });
-    } catch (error) {
-      console.error('Error saving score:', error);
-    }
-
-    if (levelCompleted) {
-      showNotification(`Congratulations! Level ${gameState.level} completed!`, 'success');
-    } else {
-      showNotification(`Game Over! Score: ${gameState.score}`, 'info');
-    }
-  };
-
-  const isWordValid = (word) => {
-    if (word.length < 3) {
-      showNotification('Word must be at least 3 letters long', 'error');
-      return false;
-    }
-
-    if (gameState.words.includes(word)) {
-      showNotification('Word already used', 'error');
-      return false;
-    }
-
-    const letterCount = {};
-    gameState.letters.forEach(letter => {
-      letterCount[letter] = (letterCount[letter] || 0) + 1;
-    });
-
-    for (const letter of word) {
-      if (!letterCount[letter]) {
-        showNotification('Invalid letters used', 'error');
-        return false;
-      }
-      letterCount[letter]--;
-    }
-
-    return true;
-  };
-
-  const handleWordSubmit = async () => {
-    const word = gameState.currentWord.toUpperCase();
+  const submitGuess = () => {
+    const currentGuess = guesses[currentRow].join('');
     
-    if (!isWordValid(word)) {
+    // Check if guess is valid (you could add dictionary check here)
+    if (currentGuess.length !== 5) return;
+
+    // Check if word matches
+    if (currentGuess === dailyWord) {
+      setGameStatus('won');
+      setModalMessage('Congratulations! You guessed the word!');
+      setOpenModal(true);
       return;
     }
 
-    try {
-      // Validate word with dictionary API
-      const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
-      const data = await response.json();
-
-      if (!response.ok || !data.length) {
-        showNotification('Not a valid English word', 'error');
-        return;
-      }
-
-      // Calculate score based on word length and level
-      const wordScore = word.length * (10 + gameState.level);
-
-      setGameState(prev => ({
-        ...prev,
-        currentWord: '',
-        score: prev.score + wordScore,
-        words: [...prev.words, word],
-      }));
-
-      showNotification(`+${wordScore} points!`, 'success');
-
-    } catch (error) {
-      console.error('Error validating word:', error);
-      showNotification('Error validating word', 'error');
+    // Move to next row
+    if (currentRow === 5) {
+      setGameStatus('lost');
+      setModalMessage(`Game Over! The word was ${dailyWord}.`);
+      setOpenModal(true);
+      return;
     }
+
+    setCurrentRow(prev => prev + 1);
+    setCurrentCol(0);
   };
 
-  // Handle letter click
-  const handleLetterClick = (letter) => {
-    if (gameState.currentWord.length < 15) {
-      setGameState(prev => ({
-        ...prev,
-        currentWord: prev.currentWord + letter,
-      }));
+  const getTileClass = (rowIndex, colIndex) => {
+    if (rowIndex >= currentRow) return classes.tile;
+    
+    const guess = guesses[rowIndex];
+    const letter = guess[colIndex];
+    
+    if (letter === dailyWord[colIndex]) {
+      return `${classes.tile} ${classes.correct}`;
     }
+    if (dailyWord.includes(letter)) {
+      return `${classes.tile} ${classes.present}`;
+    }
+    return `${classes.tile} ${classes.absent}`;
   };
+
+  const keyboard = [
+    ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+    ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+    ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACKSPACE']
+  ];
 
   return (
     <div className={classes.root}>
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Paper className={classes.paper}>
-            <Typography variant="h4" gutterBottom>
-              Word Weaver
-            </Typography>
-            <Typography variant="h6" gutterBottom>
-              Level: {gameState.level} | Score: {gameState.score}/{gameState.levelTarget}
-            </Typography>
-            <Typography variant="h6" className={classes.timer}>
-              Time: {gameState.timeLeft}s
-            </Typography>
-
-            {!gameState.isPlaying ? (
-              <Button
-                variant="contained"
-                color="primary"
-                className={classes.button}
-                onClick={startGame}
+      <Typography variant="h4" gutterBottom>
+        Wordle Clone
+      </Typography>
+      
+      <Grid container spacing={2} className={classes.grid}>
+        {guesses.map((row, rowIndex) => (
+          <div key={rowIndex} className={classes.row}>
+            {row.map((letter, colIndex) => (
+              <Paper 
+                key={colIndex} 
+                className={getTileClass(rowIndex, colIndex)}
               >
-                {gameState.words.length ? 'Play Again' : 'Start Game'}
-              </Button>
-            ) : (
-              <>
-                <div className={classes.lettersContainer}>
-                  {gameState.letters.map((letter, index) => (
-                    <Paper
-                      key={index}
-                      className={classes.letter}
-                      onClick={() => handleLetterClick(letter)}
-                    >
-                      {letter}
-                    </Paper>
-                  ))}
-                </div>
-
-                <TextField
-                  className={classes.textField}
-                  variant="outlined"
-                  label="Enter word"
-                  value={gameState.currentWord}
-                  onChange={(e) => setGameState({
-                    ...gameState,
-                    currentWord: e.target.value.toUpperCase(),
-                  })}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && gameState.currentWord) {
-                      handleWordSubmit();
-                    }
-                  }}
-                />
-
-                <Button
-                  variant="contained"
-                  color="primary"
-                  className={classes.button}
-                  onClick={handleWordSubmit}
-                  disabled={!gameState.currentWord}
-                >
-                  Submit Word
-                </Button>
-
-                <div className={classes.wordsContainer}>
-                  <Typography variant="h6" gutterBottom>
-                    Words Found:
-                  </Typography>
-                  <List dense>
-                    {gameState.words.map((word, index) => (
-                      <ListItem key={index}>
-                        <ListItemText 
-                          primary={word}
-                          secondary={`+${word.length * (10 + gameState.level)} points`}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                </div>
-              </>
-            )}
-          </Paper>
-        </Grid>
+                {letter}
+              </Paper>
+            ))}
+          </div>
+        ))}
       </Grid>
+
+      <div className={classes.keyboard}>
+        {keyboard.map((row, rowIndex) => (
+          <div key={rowIndex} className={classes.keyboardRow}>
+            {row.map((key) => (
+              <Button 
+                key={key} 
+                className={classes.key}
+                onClick={() => handleKeyPress(key)}
+              >
+                {key}
+              </Button>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <Dialog open={openModal} onClose={() => setOpenModal(false)}>
+        <DialogTitle>
+          {gameStatus === 'won' ? 'Congratulations!' : 'Game Over'}
+        </DialogTitle>
+        <DialogContent>
+          <Typography>{modalMessage}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenModal(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
 
-export default Game;
+export default WordleGame;
