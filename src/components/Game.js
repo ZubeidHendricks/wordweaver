@@ -11,18 +11,21 @@ import {
   DialogActions,
   Select,
   MenuItem,
-  Tooltip
+  Tooltip,
+  Switch,
+  FormControlLabel
 } from '@material-ui/core';
-import { ShareOutlined, HelpOutline } from '@material-ui/icons';
+import { 
+  ShareOutlined, 
+  HelpOutline, 
+  MusicNote, 
+  MusicOff,
+  Palette
+} from '@material-ui/icons';
 
-// Enhanced word lists with definitions and origins
-const WORD_DICTIONARY = {
-  'HELLO': { 
-    definition: 'Used as a greeting',
-    origin: 'Middle English, from Old English "hāl" meaning "whole"'
-  },
-  'WORLD': { 
-    definition: 'The earth, together with all of its countries and peoples',
-    origin: 'Old English "weorold", meaning age of man'
-  }
+// Multiplayer configuration
+const MULTIPLAYER_MODES = {
+  local: 'Local Versus',
+  online: 'Online Multiplayer',
+  solo: 'Solo Challenge'
 };
