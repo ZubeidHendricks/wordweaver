@@ -12,30 +12,39 @@ import {
   Select,
   MenuItem,
   Tooltip,
-  Switch,
-  FormControlLabel,
-  LinearProgress
+  TextField
 } from '@material-ui/core';
 import { 
-  ShareOutlined, 
-  HelpOutline, 
-  Accessibility,
-  TrendingUp,
-  CloudUpload
+  TranslateOutlined, 
+  LeaderboardOutlined, 
+  AddCircleOutline 
 } from '@material-ui/icons';
 
-// Advanced Word Selection Algorithm
-class WordSelectionAlgorithm {
-  constructor() {
-    this.wordPool = {
-      easy: ['HELLO', 'WORLD', 'BRAVE', 'SMART', 'CLOWN'],
-      medium: ['PUZZLE', 'KNIGHT', 'FLAME', 'DRONE', 'CHASE'],
-      hard: ['RHYTHM', 'ZEPHYR', 'QUARTZ', 'JIGSAW', 'SPHINX']
-    };
+// Advanced AI Hint Generator
+class AIHintGenerator {
+  constructor(word) {
+    this.word = word;
   }
 
-  selectWord(difficulty) {
-    const pool = this.wordPool[difficulty];
-    return pool[Math.floor(Math.random() * pool.length)];
+  generateHint() {
+    const hintTypes = [
+      this.letterFrequencyHint(),
+      this.positionHint(),
+      this.etymologyHint()
+    ];
+    
+    return hintTypes[Math.floor(Math.random() * hintTypes.length)];
+  }
+
+  letterFrequencyHint() {
+    const letterCounts = {};
+    this.word.split('').forEach(letter => {
+      letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+    });
+    
+    const mostFrequentLetter = Object.entries(letterCounts)
+      .reduce((a, b) => b[1] > a[1] ? b : a)[0];
+    
+    return `One of the most frequent letters is ${mostFrequentLetter}`;
   }
 }
