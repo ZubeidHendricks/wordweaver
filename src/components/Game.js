@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { 
   Typography, 
@@ -8,25 +8,15 @@ import {
   Dialog, 
   DialogTitle, 
   DialogContent, 
-  DialogActions,
-  Snackbar
+  DialogActions 
 } from '@material-ui/core';
-import MuiAlert from '@material-ui/lab/Alert';
 
-// Comprehensive word list with difficulty tiers
+// Word list for daily challenges
 const WORD_LISTS = {
-  easy: ['HELLO', 'WORLD', 'BRAVE', 'SMART', 'CLOWN', 'HOUSE', 'APPLE'],
-  medium: ['PUZZLE', 'KNIGHT', 'FLAME', 'DRONE', 'CHASE', 'GLIDE', 'SPARK'],
-  hard: ['RHYTHM', 'ZEPHYR', 'QUARTZ', 'JIGSAW', 'SPHINX', 'WALTZ', 'GLYPH']
+  easy: ['HELLO', 'WORLD', 'BRAVE', 'SMART', 'CLOWN'],
+  medium: ['PUZZLE', 'KNIGHT', 'FLAME', 'DRONE', 'CHASE'],
+  hard: ['RHYTHM', 'ZEPHYR', 'QUARTZ', 'JIGSAW', 'SPHINX']
 };
-
-// Expanded dictionary for word validation (partial list for demonstration)
-const VALID_WORDS = new Set([
-  ...WORD_LISTS.easy, 
-  ...WORD_LISTS.medium, 
-  ...WORD_LISTS.hard,
-  'QUICK', 'MOVIE', 'CARDS', 'POKER', 'GAME'
-]);
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -93,6 +83,7 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 'bold',
     textTransform: 'uppercase',
     cursor: 'pointer',
+    transition: 'background-color 0.2s',
   },
 }));
 
@@ -109,8 +100,9 @@ const WordleGame = () => {
   // Initialize daily word
   useEffect(() => {
     const today = new Date();
-    const seedIndex = today.getDate() % WORD_LISTS.medium.length;
-    setDailyWord(WORD_LISTS.medium[seedIndex].toUpperCase());
+    const wordList = WORD_LISTS.medium;
+    const seedIndex = today.getDate() % wordList.length;
+    setDailyWord(wordList[seedIndex].toUpperCase());
   }, []);
 
   const handleKeyPress = useCallback((key) => {
@@ -134,15 +126,6 @@ const WordleGame = () => {
   const submitGuess = () => {
     const currentGuess = guesses[currentRow].join('');
     
-    // Validate word
-    if (currentGuess.length !== 5) return;
-
-    if (!VALID_WORDS.has(currentGuess)) {
-      alert('Not a valid word');
-      return;
-    }
-
-    // Check if word matches
     if (currentGuess === dailyWord) {
       setGameStatus('won');
       setModalMessage('Congratulations! You guessed the word!');
@@ -150,7 +133,6 @@ const WordleGame = () => {
       return;
     }
 
-    // Move to next row
     if (currentRow === 5) {
       setGameStatus('lost');
       setModalMessage(`Game Over! The word was ${dailyWord}.`);
