@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { 
   Typography, 
@@ -8,14 +8,25 @@ import {
   Dialog, 
   DialogTitle, 
   DialogContent, 
-  DialogActions 
+  DialogActions,
+  Snackbar
 } from '@material-ui/core';
+import MuiAlert from '@material-ui/lab/Alert';
 
-// Word list for daily challenges
-const WORD_LIST = [
-  'HELLO', 'WORLD', 'BRAVE', 'SMART', 'CLOWN', 
-  'DRONE', 'FLAME', 'GLIDE', 'HOUSE', 'IMAGE'
-];
+// Comprehensive word list with difficulty tiers
+const WORD_LISTS = {
+  easy: ['HELLO', 'WORLD', 'BRAVE', 'SMART', 'CLOWN', 'HOUSE', 'APPLE'],
+  medium: ['PUZZLE', 'KNIGHT', 'FLAME', 'DRONE', 'CHASE', 'GLIDE', 'SPARK'],
+  hard: ['RHYTHM', 'ZEPHYR', 'QUARTZ', 'JIGSAW', 'SPHINX', 'WALTZ', 'GLYPH']
+};
+
+// Expanded dictionary for word validation (partial list for demonstration)
+const VALID_WORDS = new Set([
+  ...WORD_LISTS.easy, 
+  ...WORD_LISTS.medium, 
+  ...WORD_LISTS.hard,
+  'QUICK', 'MOVIE', 'CARDS', 'POKER', 'GAME'
+]);
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -44,7 +55,7 @@ const useStyles = makeStyles((theme) => ({
     fontSize: '2rem',
     fontWeight: 'bold',
     textTransform: 'uppercase',
-    transition: 'background-color 0.3s',
+    transition: 'all 0.3s ease',
   },
   correct: {
     backgroundColor: '#6aaa64',
@@ -63,8 +74,8 @@ const useStyles = makeStyles((theme) => ({
   },
   keyboard: {
     display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+    flexDirection: 'column',
+    alignItems: 'center',
     marginTop: theme.spacing(2),
   },
   keyboardRow: {
@@ -73,7 +84,7 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(1),
   },
   key: {
-    margin: theme.spacing(0.5),
+    margin: theme.spacing(0.25),
     padding: theme.spacing(1),
     minWidth: 40,
     backgroundColor: '#d3d6da',
@@ -82,9 +93,6 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 'bold',
     textTransform: 'uppercase',
     cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: '#bbb',
-    },
   },
 }));
 
@@ -100,29 +108,25 @@ const WordleGame = () => {
 
   // Initialize daily word
   useEffect(() => {
-    // Use date to select consistent daily word
     const today = new Date();
-    const seedIndex = today.getDate() % WORD_LIST.length;
-    setDailyWord(WORD_LIST[seedIndex]);
+    const seedIndex = today.getDate() % WORD_LISTS.medium.length;
+    setDailyWord(WORD_LISTS.medium[seedIndex].toUpperCase());
   }, []);
 
   const handleKeyPress = useCallback((key) => {
     if (gameStatus !== 'playing') return;
 
     if (/^[A-Z]$/.test(key) && currentCol < 5) {
-      // Letter input
       const newGuesses = [...guesses];
       newGuesses[currentRow][currentCol] = key;
       setGuesses(newGuesses);
       setCurrentCol(prev => Math.min(prev + 1, 4));
     } else if (key === 'BACKSPACE' && currentCol > 0) {
-      // Backspace
       const newGuesses = [...guesses];
       newGuesses[currentRow][currentCol - 1] = '';
       setGuesses(newGuesses);
       setCurrentCol(prev => Math.max(prev - 1, 0));
     } else if (key === 'ENTER' && currentCol === 5) {
-      // Submit guess
       submitGuess();
     }
   }, [currentRow, currentCol, guesses, dailyWord, gameStatus]);
@@ -130,8 +134,13 @@ const WordleGame = () => {
   const submitGuess = () => {
     const currentGuess = guesses[currentRow].join('');
     
-    // Check if guess is valid (you could add dictionary check here)
+    // Validate word
     if (currentGuess.length !== 5) return;
+
+    if (!VALID_WORDS.has(currentGuess)) {
+      alert('Not a valid word');
+      return;
+    }
 
     // Check if word matches
     if (currentGuess === dailyWord) {
@@ -154,18 +163,20 @@ const WordleGame = () => {
   };
 
   const getTileClass = (rowIndex, colIndex) => {
-    if (rowIndex >= currentRow) return classes.tile;
-    
-    const guess = guesses[rowIndex];
-    const letter = guess[colIndex];
-    
-    if (letter === dailyWord[colIndex]) {
-      return `${classes.tile} ${classes.correct}`;
+    if (rowIndex > currentRow) return classes.tile;
+    if (rowIndex < currentRow) {
+      const guess = guesses[rowIndex];
+      const letter = guess[colIndex];
+      
+      if (letter === dailyWord[colIndex]) {
+        return `${classes.tile} ${classes.correct}`;
+      }
+      if (dailyWord.includes(letter)) {
+        return `${classes.tile} ${classes.present}`;
+      }
+      return `${classes.tile} ${classes.absent}`;
     }
-    if (dailyWord.includes(letter)) {
-      return `${classes.tile} ${classes.present}`;
-    }
-    return `${classes.tile} ${classes.absent}`;
+    return classes.tile;
   };
 
   const keyboard = [
