@@ -5,7 +5,8 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    router.push('/game');
+    // Redirect logic
+    router.push('/login');
   }, []);
 
   return null;
