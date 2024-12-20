@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 
 export default function SignIn() {
   const router = useRouter();
   const [credentials, setCredentials] = useState({
-    username: '',
+    email: '',
     password: ''
   });
   const [error, setError] = useState('');
@@ -18,26 +17,28 @@ export default function SignIn() {
     setError('');
 
     try {
-      const result = await signIn('credentials', {
-        redirect: false,
-        username: credentials.username,
-        password: credentials.password
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
       });
 
-      if (result.error) {
-        setError('Invalid username or password');
-      } else {
-        router.push('/');
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
       }
+
+      // Store token
+      localStorage.setItem('token', data.token);
+      router.push('/');
     } catch (error) {
-      setError('An error occurred. Please try again.');
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleSocialSignIn = (provider) => {
-    signIn(provider, { callbackUrl: '/' });
   };
 
   return (
@@ -49,55 +50,6 @@ export default function SignIn() {
           </h2>
         </div>
 
-        {/* Social Sign In Buttons */}
-        <div className="space-y-4">
-          <button
-            onClick={() => handleSocialSignIn('google')}
-            className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-          >
-            <img
-              className="h-5 w-5 mr-2"
-              src="/images/google-icon.svg"
-              alt="Google"
-            />
-            Continue with Google
-          </button>
-
-          <button
-            onClick={() => handleSocialSignIn('github')}
-            className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-          >
-            <img
-              className="h-5 w-5 mr-2"
-              src="/images/github-icon.svg"
-              alt="GitHub"
-            />
-            Continue with GitHub
-          </button>
-
-          <button
-            onClick={() => handleSocialSignIn('facebook')}
-            className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-          >
-            <img
-              className="h-5 w-5 mr-2"
-              src="/images/facebook-icon.svg"
-              alt="Facebook"
-            />
-            Continue with Facebook
-          </button>
-        </div>
-
-        <div className="mt-6 relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Or</span>
-          </div>
-        </div>
-
-        {/* Email/Password Sign In Form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="text-red-600 text-sm text-center">
@@ -107,18 +59,18 @@ export default function SignIn() {
 
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="username" className="sr-only">Username</label>
+              <label htmlFor="email" className="sr-only">Email address</label>
               <input
-                id="username"
-                name="username"
-                type="text"
+                id="email"
+                name="email"
+                type="email"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Username"
-                value={credentials.username}
+                placeholder="Email address"
+                value={credentials.email}
                 onChange={(e) => setCredentials({
                   ...credentials,
-                  username: e.target.value
+                  email: e.target.value
                 })}
               />
             </div>
@@ -154,7 +106,7 @@ export default function SignIn() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400"
             >
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
@@ -172,6 +124,16 @@ export default function SignIn() {
           </p>
         </div>
       </div>
+
+      <style jsx>{`
+        .min-h-screen {
+          min-height: 100vh;
+        }
+        .bg-gray-50 {
+          background-color: #F9FAFB;
+        }
+        /* Add other necessary styles */
+      `}</style>
     </div>
   );
 }
