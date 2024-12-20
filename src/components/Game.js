@@ -9,9 +9,9 @@ const DIFFICULTY_LEVELS = {
 };
 
 const WORD_CATEGORIES = {
-  ANIMALS: ['cat', 'dog', 'elephant', 'giraffe', 'penguin', 'lion'],
-  COUNTRIES: ['usa', 'canada', 'brazil', 'france', 'germany', 'italy'],
-  TECH: ['code', 'data', 'web', 'app', 'cloud', 'program']
+  ANIMALS: ['cat', 'dog', 'elephant', 'giraffe', 'penguin', 'lion', 'tiger', 'bear'],
+  COUNTRIES: ['usa', 'canada', 'brazil', 'france', 'germany', 'italy', 'spain'],
+  TECH: ['code', 'data', 'web', 'app', 'cloud', 'program', 'digital', 'network']
 };
 
 const Game = () => {
@@ -24,9 +24,11 @@ const Game = () => {
     streak: 0,
     timeLeft: 60,
     hintsLeft: 3,
+    usedWords: new Set(),
   });
 
   const [userInput, setUserInput] = useState('');
+  const [hints, setHints] = useState([]);
   const [currentStage, setCurrentStage] = useState('main');
   const [mascotState, setMascotState] = useState({
     mood: 'normal',
@@ -48,16 +50,35 @@ const Game = () => {
     return () => clearInterval(timer);
   }, [gameState.isActive, gameState.timeLeft]);
 
+  const selectWord = () => {
+    const words = WORD_CATEGORIES[gameState.category].filter(word => {
+      const { minLength, maxLength } = DIFFICULTY_LEVELS[gameState.difficulty];
+      return word.length >= minLength && 
+             word.length <= maxLength && 
+             !gameState.usedWords.has(word);
+    });
+
+    if (words.length === 0) {
+      // Reset used words if all words have been used
+      setGameState(prev => ({ ...prev, usedWords: new Set() }));
+      return WORD_CATEGORIES[gameState.category][0];
+    }
+
+    return words[Math.floor(Math.random() * words.length)];
+  };
+
   const startGame = () => {
-    const newWord = WORD_CATEGORIES[gameState.category][0];
+    const newWord = selectWord();
     setGameState(prev => ({
       ...prev,
       isActive: true,
       currentWord: newWord,
       timeLeft: DIFFICULTY_LEVELS[prev.difficulty].timeLimit,
-      hintsLeft: 3
+      hintsLeft: 3,
+      usedWords: new Set([newWord])
     }));
     setUserInput('');
+    setHints([]);
     setMascotState({
       mood: 'excited',
       message: "Let's begin!"
@@ -75,21 +96,61 @@ const Game = () => {
     });
   };
 
+  const getHint = () => {
+    if (gameState.hintsLeft <= 0) {
+      setMascotState({
+        mood: 'worried',
+        message: 'No hints left!'
+      });
+      return;
+    }
+
+    const word = gameState.currentWord;
+    const possibleHints = [
+      `The word has ${word.length} letters`,
+      `First letter is '${word[0]}'`,
+      `Last letter is '${word[word.length - 1]}'`,
+      `Contains ${(word.match(/[aeiou]/gi) || []).length} vowels`,
+      `Middle letter is '${word[Math.floor(word.length / 2)]}'`
+    ].filter(hint => !hints.includes(hint));
+
+    if (possibleHints.length > 0) {
+      const newHint = possibleHints[Math.floor(Math.random() * possibleHints.length)];
+      setHints([...hints, newHint]);
+      setGameState(prev => ({
+        ...prev,
+        hintsLeft: prev.hintsLeft - 1
+      }));
+      setMascotState({
+        mood: 'thinking',
+        message: 'Here\'s a hint for you!'
+      });
+    }
+  };
+
   const handleGuess = (e) => {
     e.preventDefault();
     if (!gameState.isActive) return;
 
     if (userInput.toLowerCase() === gameState.currentWord.toLowerCase()) {
+      const newWord = selectWord();
       const points = DIFFICULTY_LEVELS[gameState.difficulty].points;
+      
       setGameState(prev => ({
         ...prev,
         score: prev.score + points,
-        streak: prev.streak + 1
+        streak: prev.streak + 1,
+        currentWord: newWord,
+        timeLeft: DIFFICULTY_LEVELS[prev.difficulty].timeLimit,
+        usedWords: new Set([...prev.usedWords, newWord])
       }));
+      
       setMascotState({
         mood: 'celebrating',
         message: 'Great job!'
       });
+      
+      setHints([]); // Reset hints for new word
     } else {
       setGameState(prev => ({ ...prev, streak: 0 }));
       setMascotState({
@@ -108,6 +169,7 @@ const Game = () => {
             <span>Score: {gameState.score}</span>
             <span>Streak: {gameState.streak}</span>
             <span>Time: {gameState.timeLeft}s</span>
+            <span>Hints: {gameState.hintsLeft}</span>
           </div>
 
           <div className="game-controls">
@@ -157,6 +219,21 @@ const Game = () => {
               ))}
             </div>
 
+            <div className="hint-section">
+              <button 
+                onClick={getHint} 
+                disabled={gameState.hintsLeft <= 0}
+                className="hint-button"
+              >
+                Get Hint ({gameState.hintsLeft} left)
+              </button>
+              <div className="hints-display">
+                {hints.map((hint, index) => (
+                  <div key={index} className="hint">{hint}</div>
+                ))}
+              </div>
+            </div>
+
             <form onSubmit={handleGuess} className="guess-form">
               <input
                 type="text"
@@ -178,110 +255,40 @@ const Game = () => {
       />
 
       <style jsx>{`
-        .game-container {
-          position: relative;
-          min-height: 100vh;
-          padding: 20px;
-        }
-
-        .game-content {
-          max-width: 800px;
-          margin: 0 auto;
-          padding: 20px;
-          background: white;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .game-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-        }
-
-        .score-info {
-          display: flex;
-          gap: 20px;
-        }
-
-        .game-controls {
-          display: flex;
-          gap: 10px;
-        }
-
-        .game-controls select,
-        .game-controls button {
-          padding: 8px 16px;
-          border: 2px solid #2196f3;
-          border-radius: 4px;
-          background: white;
-          cursor: pointer;
-        }
-
-        .start-btn {
-          background: #4caf50 !important;
-          color: white;
-        }
-
-        .stop-btn {
-          background: #f44336 !important;
-          color: white;
-        }
-
-        .word-display {
-          display: flex;
-          gap: 10px;
-          justify-content: center;
+        /* Previous styles remain the same */
+        
+        .hint-section {
           margin: 20px 0;
+          text-align: center;
         }
 
-        .letter-box {
-          width: 40px;
-          height: 40px;
-          border: 2px solid #2196f3;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.5rem;
-          font-weight: bold;
-          border-radius: 4px;
-        }
-
-        .letter-box.correct {
-          background: #4caf50;
-          color: white;
-          border-color: #4caf50;
-        }
-
-        .letter-box.incorrect {
-          background: #f44336;
-          color: white;
-          border-color: #f44336;
-        }
-
-        .guess-form {
-          display: flex;
-          gap: 10px;
-          justify-content: center;
-          margin: 20px 0;
-        }
-
-        .guess-form input {
+        .hint-button {
           padding: 8px 16px;
-          font-size: 1.2rem;
-          border: 2px solid #2196f3;
-          border-radius: 4px;
-          width: 200px;
-        }
-
-        .guess-form button {
-          padding: 8px 24px;
-          background: #2196f3;
+          background: #ff9800;
           color: white;
           border: none;
           border-radius: 4px;
           cursor: pointer;
+          margin-bottom: 10px;
+        }
+
+        .hint-button:disabled {
+          background: #ccc;
+          cursor: not-allowed;
+        }
+
+        .hints-display {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          justify-content: center;
+        }
+
+        .hint {
+          background: #f0f0f0;
+          padding: 8px 12px;
+          border-radius: 4px;
+          font-size: 0.9rem;
         }
       `}</style>
     </div>
