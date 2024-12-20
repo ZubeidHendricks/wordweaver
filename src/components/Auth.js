@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { TextField, Button, Paper, Typography, Container } from '@material-ui/core';
+import { TextField, Button, Paper, Typography, Container, Link as MuiLink } from '@material-ui/core';
+import Link from 'next/link';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -19,6 +20,10 @@ const useStyles = makeStyles((theme) => ({
   },
   toggleButton: {
     marginTop: theme.spacing(2),
+  },
+  forgotPassword: {
+    marginTop: theme.spacing(1),
+    textAlign: 'center',
   },
 }));
 
@@ -98,6 +103,15 @@ const Auth = ({ setUser, showNotification }) => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          {isLogin && (
+            <div className={classes.forgotPassword}>
+              <Link href="/forgot-password">
+                <MuiLink component="a" variant="body2" color="primary" style={{ cursor: 'pointer' }}>
+                  Forgot Password?
+                </MuiLink>
+              </Link>
+            </div>
+          )}
           <Button
             type="submit"
             fullWidth
