@@ -1,26 +1,70 @@
 import React from 'react';
 
 const GameMascot = ({ mood, message }) => {
-  // Different mascot expressions based on mood
-  const expressions = {
-    happy: '(◕‿◕)',
-    thinking: '(¬‿¬)',
-    excited: '(★ω★)',
-    sad: '(╥﹏╥)',
-    sleeping: '(─.─)zzz',
-    normal: '(・ω・)',
-    celebrating: '\\(^ω^)/',
-    surprised: '(○o○)',
-    worried: '(◍•﹏•)'
+  const getRobotExpression = (mood) => {
+    const expressions = {
+      normal: {
+        eyes: '◔ ◔',
+        mouth: '▿',
+        antennas: '∧ ∧',
+        color: '#64B5F6'
+      },
+      happy: {
+        eyes: '◠ ◠',
+        mouth: '‿',
+        antennas: '∧ ∧',
+        color: '#81C784'
+      },
+      thinking: {
+        eyes: '◔ ◔',
+        mouth: '―',
+        antennas: '〳 〵',
+        color: '#FFB74D'
+      },
+      excited: {
+        eyes: '★ ★',
+        mouth: '∀',
+        antennas: '⟍ ⟋',
+        color: '#FFD54F'
+      },
+      sad: {
+        eyes: '︵ ︵',
+        mouth: '︶',
+        antennas: '∨ ∨',
+        color: '#90A4AE'
+      },
+      celebrating: {
+        eyes: '♥ ♥',
+        mouth: '∀',
+        antennas: '≫ ≪',
+        color: '#EF5350'
+      },
+      surprised: {
+        eyes: '⊙ ⊙',
+        mouth: '○',
+        antennas: '⟁ ⟁',
+        color: '#7E57C2'
+      },
+      worried: {
+        eyes: '◑ ◑',
+        mouth: '⌒',
+        antennas: '⌇ ⌇',
+        color: '#FF7043'
+      }
+    };
+
+    return expressions[mood] || expressions.normal;
   };
+
+  const expression = getRobotExpression(mood);
 
   return (
     <div className="mascot-container">
-      <div className={`mascot ${mood}`}>
-        <div className="mascot-face">{expressions[mood] || expressions.normal}</div>
-        <div className="mascot-body">
-          /|\ <br />
-          / \
+      <div className="robot">
+        <div className="antennas">{expression.antennas}</div>
+        <div className="face">
+          <div className="eyes">{expression.eyes}</div>
+          <div className="mouth">{expression.mouth}</div>
         </div>
       </div>
       {message && <div className="speech-bubble">{message}</div>}
@@ -36,38 +80,47 @@ const GameMascot = ({ mood, message }) => {
           z-index: 100;
         }
 
-        .mascot {
-          text-align: center;
-          font-size: 24px;
+        .robot {
+          background: ${expression.color};
+          padding: 15px;
+          border-radius: 10px;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
           transition: all 0.3s ease;
-          animation: bounce 2s infinite;
+          animation: float 3s infinite ease-in-out;
         }
 
-        .mascot.happy { transform: translateY(-5px); }
-        .mascot.thinking { transform: rotate(5deg); }
-        .mascot.excited { animation: jump 0.5s infinite; }
-        .mascot.sad { transform: translateY(5px); }
-        .mascot.sleeping { transform: rotate(-10deg); }
-        .mascot.celebrating { animation: celebrate 1s infinite; }
-        .mascot.surprised { animation: shake 0.5s infinite; }
-        .mascot.worried { animation: wobble 2s infinite; }
-
-        .mascot-face {
-          font-size: 40px;
+        .antennas {
+          font-size: 24px;
+          text-align: center;
+          color: white;
           margin-bottom: 5px;
+          animation: wiggle 2s infinite ease-in-out;
         }
 
-        .mascot-body {
-          font-size: 20px;
+        .face {
+          background: white;
+          padding: 10px;
+          border-radius: 8px;
+          text-align: center;
+        }
+
+        .eyes {
+          font-size: 28px;
           line-height: 1;
-          color: #666;
+          margin-bottom: 5px;
+          animation: blink 4s infinite;
+        }
+
+        .mouth {
+          font-size: 24px;
+          line-height: 1;
         }
 
         .speech-bubble {
           position: relative;
-          background: #fff;
-          border-radius: 10px;
+          background: white;
           padding: 10px 15px;
+          border-radius: 10px;
           max-width: 200px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
           animation: fadeIn 0.3s ease;
@@ -80,34 +133,22 @@ const GameMascot = ({ mood, message }) => {
           bottom: 20px;
           border-width: 10px 0 10px 10px;
           border-style: solid;
-          border-color: transparent transparent transparent #fff;
+          border-color: transparent transparent transparent white;
         }
 
-        @keyframes bounce {
+        @keyframes float {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-10px); }
         }
 
-        @keyframes jump {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(10deg); }
-        }
-
-        @keyframes celebrate {
-          0% { transform: rotate(-10deg); }
-          50% { transform: rotate(10deg); }
-          100% { transform: rotate(-10deg); }
-        }
-
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
-        }
-
-        @keyframes wobble {
+        @keyframes wiggle {
           0%, 100% { transform: rotate(-5deg); }
           50% { transform: rotate(5deg); }
+        }
+
+        @keyframes blink {
+          0%, 48%, 52%, 100% { transform: scaleY(1); }
+          50% { transform: scaleY(0.1); }
         }
 
         @keyframes fadeIn {
