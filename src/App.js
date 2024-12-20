@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import axios from 'axios';
 import Game from './components/Game';
-import Auth from './components/Auth';
 import Leaderboard from './components/Leaderboard';
 import Notification from './components/Notification';
 import { ThemeProvider, createTheme } from '@material-ui/core/styles';
@@ -64,37 +62,11 @@ const theme = createTheme({
 
 const App = () => {
   const router = useRouter();
-  const [user, setUser] = useState(null);
   const [notification, setNotification] = useState({ message: '', type: '' });
-  
-  useEffect(() => {  
-    const token = localStorage.getItem('token');
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      fetchUserData();
-    }
-  }, []);
-
-  const fetchUserData = async () => {
-    try {
-      const { data } = await axios.get('/api/user');
-      setUser(data);
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-      localStorage.removeItem('token');
-    }
-  };
 
   const showNotification = (message, type = 'info') => {
     setNotification({ message, type });
     setTimeout(() => setNotification({ message: '', type: '' }), 3000);
-  };
-
-  const logout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
-    showNotification('Logged out successfully', 'success');
-    router.push('/login');
   };
 
   return (
@@ -107,23 +79,13 @@ const App = () => {
           </Typography>
           <Button color="inherit" component={Link} href="/game">Game</Button>
           <Button color="inherit" component={Link} href="/leaderboard">Leaderboard</Button>
-          {user ? (
-            <Button color="inherit" onClick={logout}>Logout</Button>
-          ) : (
-            <Button color="inherit" component={Link} href="/login">Login</Button>
-          )}
         </Toolbar>
       </AppBar>
 
       <Container>
         <Notification message={notification.message} type={notification.type} />
-        {router.pathname === '/' && <Game user={user} showNotification={showNotification} />}
-        {router.pathname === '/login' && <Auth setUser={setUser} showNotification={showNotification} />}
-        {router.pathname === '/game' && user ? (
-          <Game user={user} showNotification={showNotification} />
-        ) : (
-          router.push('/login')
-        )}
+        {router.pathname === '/' && <Game showNotification={showNotification} />}
+        {router.pathname === '/game' && <Game showNotification={showNotification} />}
         {router.pathname === '/leaderboard' && <Leaderboard />}
       </Container>
     </ThemeProvider>
